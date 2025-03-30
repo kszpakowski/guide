@@ -78,7 +78,7 @@ export default function Home() {
 
   return (
     <div className="p-4">
-      <div>{Array.from(new Set(filteredRestaurants.flatMap(r => r.tags))).map(t => {
+      <div className="p-4">{Array.from(new Set(filteredRestaurants.flatMap(r => r.tags))).map(t => {
         return (
           <span key={t} onClick={onTagClick} className={
             "inline-block text-xs font-semibold mr-2 px-2.5 py-0.5 rounded" +
