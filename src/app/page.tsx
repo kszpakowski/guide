@@ -81,7 +81,7 @@ export default function Home() {
       <div className="p-4">{Array.from(new Set(filteredRestaurants.flatMap(r => r.tags))).map(t => {
         return (
           <span key={t} onClick={onTagClick} className={
-            "inline-block text-xs font-semibold mr-2 px-2.5 py-0.5 rounded" +
+            "inline-block cursor-pointer text-xs font-semibold m-1 px-4 py-2 rounded" +
             (tags.includes(t) ? " bg-blue-500 text-white" : " bg-blue-200 text-blue-800")
           }>
             {t}
