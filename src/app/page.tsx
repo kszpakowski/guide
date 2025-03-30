@@ -1,103 +1,107 @@
-import Image from "next/image";
+"use client"
+
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
+import { getAnalytics } from "firebase/analytics";
+import { useEffect, useState } from "react";
+import "leaflet/dist/leaflet.css";
+import { RestaurantCard } from "@/components/restaurant-card";
+const firebaseConfig = {
+  apiKey: "AIzaSyBSBr64-l7LyEB7_L7mb8sOYg4VRrxQQTQ",
+  authDomain: "restaurants-a9658.firebaseapp.com",
+  projectId: "restaurants-a9658",
+  storageBucket: "restaurants-a9658.firebasestorage.app",
+  messagingSenderId: "720735233401",
+  appId: "1:720735233401:web:c45078a02876530d577ba8",
+  measurementId: "G-6XQX9XC2FX"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const db = getFirestore(app);
+
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  // const analytics = getAnalytics(app);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  const [restaurants, setRestaurants] = useState<{
+    id: string;
+    tags: string[];
+    name: string;
+    address: string;
+    review: string;
+  }[]>([]);
+  const [search, setSearch] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
+
+  const onTagClick = (e: any) => {
+    const tag = e.target.innerText;
+    console.log(tag)
+
+    if (tags.includes(tag)) {
+      setTags(tags.filter(t => t !== tag));
+    }
+    else {
+      setTags([...tags, tag]);
+    }
+  }
+
+  useEffect(() => {
+    async function fetchRestaurants() {
+      try {
+        const q = query(collection(db, "restaurants"));
+        const querySnapshot = await getDocs(q);
+        console.log(querySnapshot)
+        setRestaurants(querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          name: doc.data().name,
+          address: doc.data().address,
+          review: doc.data().review,
+          tags: doc.data().tags,
+        })));
+
+      } catch (error) {
+        console.error("Error fetching restaurants: ", error);
+      }
+    }
+    fetchRestaurants();
+  }, []);
+
+  const filteredRestaurants = restaurants.filter(r => {
+    if (tags.length === 0) {
+      return true;
+    } else {
+      return tags.every(tag => r.tags.includes(tag));
+    }
+
+  }
+  );
+
+
+  return (
+    <div className="p-4">
+      <div>{Array.from(new Set(filteredRestaurants.flatMap(r => r.tags))).map(t => {
+        return (
+          <span key={t} onClick={onTagClick} className={
+            "inline-block text-xs font-semibold mr-2 px-2.5 py-0.5 rounded" +
+            (tags.includes(t) ? " bg-blue-500 text-white" : " bg-blue-200 text-blue-800")
+          }>
+            {t}
+          </span>
+        )
+      })}</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredRestaurants.map(r => (
+          <RestaurantCard restaurant={r} key={r.id} />
+        ))}
+        {filteredRestaurants.length === 0 && (
+          <div className="col-span-1 md:col-span-2 lg:col-span-3">
+            <p className="text-center text-gray-500">No restaurants found</p>
+          </div>
+        )}
+
+      </div>
+
     </div>
   );
 }
