@@ -1,8 +1,7 @@
 "use client"
 
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
-import { getAnalytics } from "firebase/analytics";
+import { getFirestore, collection, query, getDocs } from 'firebase/firestore';
 import { useEffect, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import { RestaurantCard } from "@/components/restaurant-card";
@@ -31,11 +30,10 @@ export default function Home() {
     address: string;
     review: string;
   }[]>([]);
-  const [search, setSearch] = useState('');
   const [tags, setTags] = useState<string[]>([]);
 
-  const onTagClick = (e: any) => {
-    const tag = e.target.innerText;
+  const onTagClick = (e: React.MouseEvent<HTMLSpanElement>) => {
+    const tag = (e.target as HTMLSpanElement).innerText;
     console.log(tag)
 
     if (tags.includes(tag)) {
