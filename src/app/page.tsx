@@ -66,9 +66,11 @@ export default function Home() {
           }
         }
         ).sort((a, b) => {
-          if (a.distance === -1) return 1;
-          if (b.distance === -1) return -1;
-          return a.distance - b.distance;
+          if (a.distance === -1 && b.distance === -1) return a.name.localeCompare(b.name);
+          if (a.distance === -1 && b.distance !== -1) return 1;
+          if (a.distance !== -1 && b.distance === -1) return -1;
+          if (a.distance === b.distance) return a.name.localeCompare(b.name);
+          return a.distance.toFixed(2).localeCompare(b.distance.toFixed(2));
         });
         setRestaurants(restaurantsData);
       } catch (error) {
