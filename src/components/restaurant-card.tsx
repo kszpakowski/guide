@@ -5,6 +5,7 @@ interface RestaurantCardProps {
         address: string;
         review: string;
         tags: string[];
+        distance: number;
     }
 
 }
@@ -25,6 +26,9 @@ export const RestaurantCard = (props: RestaurantCardProps) => {
                     </span>
                 )
             })}
+            <p className="text-sm text-gray-500">
+                {props.restaurant.distance > 0 ? `Distance: ${props.restaurant.distance.toFixed(2)} km` : "Distance: Unknown"}
+            </p>
         </div>
     );
 }

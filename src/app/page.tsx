@@ -29,8 +29,13 @@ export default function Home() {
     name: string;
     address: string;
     review: string;
+    distance: number;
   }[]>([]);
   const [tags, setTags] = useState<string[]>([]);
+  const [location, setLocation] = useState<{
+    lat: number;
+    lon: number;
+  } | null>(null);
 
   const onTagClick = (e: React.MouseEvent<HTMLSpanElement>) => {
     const tag = (e.target as HTMLSpanElement).innerText;
@@ -49,21 +54,39 @@ export default function Home() {
       try {
         const q = query(collection(db, "restaurants"));
         const querySnapshot = await getDocs(q);
-        console.log(querySnapshot)
-        setRestaurants(querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          name: doc.data().name,
-          address: doc.data().address,
-          review: doc.data().review,
-          tags: doc.data().tags,
-        })));
-
+        const restaurantsData = querySnapshot.docs.map(doc => {
+          const distance = doc.data().loc && location ? haversineDistance(location.lat, location.lon, doc.data().loc.lat, doc.data().loc.lng) : -1;
+          return {
+            id: doc.id,
+            name: doc.data().name,
+            address: doc.data().address,
+            review: doc.data().review,
+            tags: doc.data().tags,
+            distance
+          }
+        }
+        ).sort((a, b) => {
+          if (a.distance === -1) return 1;
+          if (b.distance === -1) return -1;
+          return a.distance - b.distance;
+        });
+        setRestaurants(restaurantsData);
       } catch (error) {
         console.error("Error fetching restaurants: ", error);
       }
     }
     fetchRestaurants();
-  }, []);
+  }, [location]);
+
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(position => {
+        let lat = position.coords.latitude;
+        let lon = position.coords.longitude;
+        setLocation({ lat, lon });
+      })
+    }
+  })
 
   const filteredRestaurants = restaurants.filter(r => {
     if (tags.length === 0) {
@@ -71,9 +94,22 @@ export default function Home() {
     } else {
       return tags.every(tag => r.tags.includes(tag));
     }
+  });
 
+  const haversineDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // Earth's radius in km
+    const toRad = (angle: number) => angle * (Math.PI / 180);
+
+    let dLat = toRad(lat2 - lat1);
+    let dLon = toRad(lon2 - lon1);
+
+    let a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+    let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in km
   }
-  );
 
 
   return (
