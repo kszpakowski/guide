@@ -1,27 +1,17 @@
 "use client"
-
-import { initializeApp } from "firebase/app";
+import { app } from "@/lib/firebase";
 import { getFirestore, collection, query, getDocs } from 'firebase/firestore';
 import { useEffect, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import { RestaurantCard } from "@/components/restaurant-card";
-const firebaseConfig = {
-  apiKey: "AIzaSyBSBr64-l7LyEB7_L7mb8sOYg4VRrxQQTQ",
-  authDomain: "restaurants-a9658.firebaseapp.com",
-  projectId: "restaurants-a9658",
-  storageBucket: "restaurants-a9658.firebasestorage.app",
-  messagingSenderId: "720735233401",
-  appId: "1:720735233401:web:c45078a02876530d577ba8",
-  measurementId: "G-6XQX9XC2FX"
-};
+import { useRouter } from "next/navigation";
 
-const app = initializeApp(firebaseConfig);
+
 
 const db = getFirestore(app);
 
-
 export default function Home() {
-  // const analytics = getAnalytics(app);
+
 
   const [restaurants, setRestaurants] = useState<{
     id: string;
@@ -48,6 +38,7 @@ export default function Home() {
       setTags([...tags, tag]);
     }
   }
+
 
   useEffect(() => {
     async function fetchRestaurants() {
@@ -113,9 +104,15 @@ export default function Home() {
     return R * c; // Distance in km
   }
 
+  const router = useRouter();
+  const handleRestaurantClick = (id: string) => {
+    router.push(`/restaurants/${id}`);
+  }
+
 
   return (
     <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Restaurants</h1>
       <div className="p-4">{Array.from(new Set(filteredRestaurants.flatMap(r => r.tags))).map(t => {
         return (
           <span key={t} onClick={onTagClick} className={
@@ -128,7 +125,7 @@ export default function Home() {
       })}</div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredRestaurants.map(r => (
-          <RestaurantCard restaurant={r} key={r.id} />
+          <RestaurantCard restaurant={r} key={r.id} onClick={handleRestaurantClick}/>
         ))}
         {filteredRestaurants.length === 0 && (
           <div className="col-span-1 md:col-span-2 lg:col-span-3">

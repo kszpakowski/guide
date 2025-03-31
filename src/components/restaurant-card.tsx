@@ -7,15 +7,17 @@ interface RestaurantCardProps {
         tags: string[];
         distance: number;
     }
+    onClick?: (id: string) => void;
 
 }
 
 
 export const RestaurantCard = (props: RestaurantCardProps) => {
-    const { name, address, review, tags, distance } = props.restaurant;
+    const { onClick } = props;
+    const { id, name, address, review, tags, distance } = props.restaurant;
 
     return (
-        <div className="bg-stone-100 dark:bg-stone-900 shadow-md rounded-lg p-4">
+        <div onClick={() => onClick && onClick(id)} className="bg-stone-100 dark:bg-stone-900 shadow-md rounded-lg p-4">
             <h2 className="text-lg font-bold">{name}</h2>
             <p className="text-sm">{address}</p>
             <p className="text-base">{review}</p>
